@@ -1,0 +1,218 @@
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import '../../App.css'
+import { logIn } from "../../Store/loginSlice";
+import Alert from 'react-bootstrap/Alert';
+import { useNavigate } from "react-router-dom";
+import { GoAlertFill } from 'react-icons/go';
+import { postAuthors } from "../../Store/authorSlice";
+import '../MyNav/MyNav.css'
+
+const Login = () => {
+    const actualTheme = useSelector(state => state.theme.theme)
+    const logStatus = useSelector(state => state.logIn)
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+    const [file, setfile] = useState (null)
+    const [loginFormData, setLoginFormData] = useState({})
+    const [register, setRegister] = useState(false)
+    const [registerFormData, setRegisterFormData] = useState({})
+    const [secondPassword, setSecondPassword] = useState('')
+    console.log (registerFormData);
+    console.log (file)
+    
+    const onSubmit = async (e) => {
+        e.preventDefault();
+
+        dispatch(logIn(loginFormData))
+            .then(() => localStorage.getItem('userLoggedIn') ? navigate('/') : '')
+    }
+
+    const handleChange = (e) => {
+        const { name, value, type, files } = e.target;
+        const newValue = type === 'file' ? files[0] : value;
+    
+        setRegisterFormData({
+          ...registerFormData,
+          [name]: newValue,
+        });
+      };
+    
+    const sendRegister = async (e) => {
+        e.preventDefault();
+        const form = new FormData()
+        form.append("name",registerFormData.name)
+        form.append("surname",registerFormData.surname)
+        form.append("email",registerFormData.email)
+        form.append("password",registerFormData.password)
+        form.append("birthdate",registerFormData.birthdate)
+        form.append("avatar",registerFormData.avatar)
+        
+        dispatch (postAuthors(form))
+
+    }
+
+    const loginWithGithub = async () => {
+        window.location.href = `${process.env.REACT_APP_SERVER_BASE_URL}/auth/github/`;
+    }
+
+    return (
+        <div className={actualTheme ? " py-5" : "dark-theme text-light py-5"}>
+            <div className="d-flex flex-column justify-content-center align-items-center" >
+                <form encType="multipart/form-data" style={{ width: '100%', maxWidth: '80%', margin: '0 auto' }} onSubmit={onSubmit}>
+                    <h3>Log In</h3>
+                    <div className="mb-3">
+                        <label>Email:</label>
+                        <input
+                            type="email"
+                            className="form-control"
+                            placeholder="Enter email"
+                            onChange={(e) => setLoginFormData({
+                                ...loginFormData,
+                                email: e.target.value
+                            })}
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <label>Password:</label>
+                        <input
+                            type="password"
+                            className="form-control"
+                            placeholder="Enter password"
+                            onChange={(e) => setLoginFormData({
+                                ...loginFormData,
+                                password: e.target.value
+                            })}
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <div className="custom-control custom-checkbox">
+                            <input
+                                type="checkbox"
+                                className="custom-control-input"
+                                id="customCheck1"
+                            />
+                            <label className="custom-control-label mx-1" htmlFor="customCheck1">
+                                Remember me
+                            </label>
+                        </div>
+                    </div>
+                    <div className="d-grid">
+                        <button type="submit" className="btn btn-outline-info mb-3">
+                            Log in
+                        </button>
+                    </div>
+                    <p className="forgot-password text-right" style={{ fontSize: '14px' }}>
+                        <a href="#">I'm forgot the password?</a>
+                    </p>
+                </form>
+                {logStatus.res && logStatus.res.statusCode === 404 && (
+                    <Alert style={{ width: '100%', maxWidth: '80%', margin: '0 auto' }} key="danger" variant="danger">
+                        Wrong E-mail or Password
+                    </Alert>
+                )}
+                {logStatus.res && logStatus.res.statusCode === 400 && (
+                    <Alert style={{ width: '100%', maxWidth: '80%', margin: '0 auto' }} key="danger" variant="danger">
+                        Wrong E-mail or Password
+                    </Alert>
+                )}
+                <div>
+                    <h6 className="text-center mt-4 mb-3">YOU'RE NOT A MEMBER?</h6>
+                    <button onClick={() => setRegister(!register)} className="btn btn-outline-info mx-1">
+                        Sign up
+                    </button>
+                    <button onClick={loginWithGithub} className="btn btn-dark mx-1">
+                        Login with Github
+                    </button>
+                </div>
+                {register && (
+                    <div style={{ width: '100%', maxWidth: '80%', margin: '0 auto' }} className="mb-5">
+                        <form onSubmit={sendRegister}>
+                            <div className="mb-3">
+                                <label>Name:</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Enter Your Name"
+                                    onChange={handleChange}
+
+                                />
+                            </div>
+                            <div className="mb-3">
+                                <label>Surname:</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Enter Your Surname"
+                                    onChange={handleChange}
+
+                                />
+                            </div>
+                            <div className="mb-3">
+                                <label>Birthday:</label>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    placeholder="Enter Your Date of Birth"
+                                    onChange={handleChange}
+
+                                />
+                            </div>
+                            <div className="mb-3">
+                                <label>Email:</label>
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    placeholder="Enter Your Email"
+                                    onChange={handleChange}
+
+                                />
+                            </div>
+                            <div className="mb-3">
+                                <label>Password:</label>
+                                <input
+                                    type="password"
+                                    className="form-control"
+                                    placeholder="Enter Your Password"
+                                    onChange={handleChange}
+
+                                />
+                            </div>
+                            <div className="mb-3">
+                                <input
+                                    type="password"
+                                    className="form-control"
+                                    placeholder="Repete Password"
+                                    onChange={(e) => setSecondPassword(e.target.value)}
+                                />
+                                {registerFormData.password !== secondPassword && (
+                                    <>
+                                        <GoAlertFill />
+                                        <span>No match password</span>
+                                    </>
+                                )}
+                            </div>
+                            <div className="mb-3">
+                                <input
+                                    type="file"
+                                    className="form-control"
+                                    placeholder="Avatar"
+                                    onChange={handleChange}
+                                />
+                            </div>
+                            <div className="d-grid mb-4">
+                                <button type="submit" className="btn btn-outline-info">
+                                    Sing in
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                )}
+
+
+            </div>
+        </div>
+    )
+}
+
+export default Login
