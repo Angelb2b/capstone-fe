@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Button } from 'react-bootstrap';
 import { useSession } from '../../middlewares/ProtectedRoutes';
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,7 +11,7 @@ const Hero = () => {
     const dispatch = useDispatch();
     const session = useSession();
     const actualTheme = useSelector(state => state.theme.theme);
-    const maxTextLength = 500; // Definisci la lunghezza massima del testo prima di mostrare il pulsante "Mostra di più"
+    const maxTextLength = 500;
 
     const handleInputChange = (e) => {
         setKeyword(e.target.value);
@@ -38,6 +38,19 @@ const Hero = () => {
     const toggleShowMore = () => {
         setShowMore(!showMore);
     };
+
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+    const handleResize = () => {
+        setWindowWidth(window.innerWidth);
+    };
+
+    useEffect(() => {
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
     return (
         <>
@@ -83,11 +96,14 @@ const Hero = () => {
             </div>
             <div className="text-center">
                 <p className='Rowdies'>
-                    {isTextTooLong && !showMore ? longText.substring(0, maxTextLength) : longText}
+                    {windowWidth <= 768 && isTextTooLong && !showMore
+                        ? longText.substring(0, maxTextLength)
+                        : longText
+                    }
                 </p>
             </div>
             <div className="text-center mt-3">
-                {isTextTooLong && (
+                {isTextTooLong && windowWidth <= 768 && (
                     <Button
                         variant="outline-info"
                         onClick={toggleShowMore}
