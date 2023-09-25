@@ -13,14 +13,12 @@ const Login = () => {
     const logStatus = useSelector(state => state.logIn)
     const dispatch = useDispatch()
     const navigate = useNavigate()
-    const [file, setfile] = useState (null)
+
     const [loginFormData, setLoginFormData] = useState({})
     const [register, setRegister] = useState(false)
     const [registerFormData, setRegisterFormData] = useState({})
     const [secondPassword, setSecondPassword] = useState('')
-    console.log (registerFormData);
-    console.log (file)
-    
+
     const onSubmit = async (e) => {
         e.preventDefault();
 
@@ -28,31 +26,22 @@ const Login = () => {
             .then(() => localStorage.getItem('userLoggedIn') ? navigate('/') : '')
     }
 
-    const handleChange = (e) => {
-        const { name, value, type, files } = e.target;
-        const newValue = type === 'file' ? files[0] : value;
-    
-        setRegisterFormData({
-          ...registerFormData,
-          [name]: newValue,
-        });
-      };
-    
     const sendRegister = async (e) => {
         e.preventDefault();
-        const form = new FormData()
-        form.append("name",registerFormData.name)
-        form.append("surname",registerFormData.surname)
-        form.append("email",registerFormData.email)
-        form.append("password",registerFormData.password)
-        form.append("birthdate",registerFormData.birthdate)
-        form.append("avatar",registerFormData.avatar)
-        
-        dispatch (postAuthors(form))
+        if (registerFormData.password === secondPassword) {
+            dispatch(postAuthors(registerFormData))
+                .then(() => dispatch(logIn({
+                    email: registerFormData.email,
+                    password: registerFormData.password
+                })))
+                .then(() => localStorage.getItem('userLoggedIn') ? navigate('/') : '')
+            console.log(registerFormData)
+        } else { console.log("psw errate") }
 
     }
 
     const loginWithGithub = async () => {
+        /* localStorage.setItem('isLogging', true) */     //?
         window.location.href = `${process.env.REACT_APP_SERVER_BASE_URL}/auth/github/`;
     }
 
@@ -127,14 +116,17 @@ const Login = () => {
                 </div>
                 {register && (
                     <div style={{ width: '100%', maxWidth: '80%', margin: '0 auto' }} className="mb-5">
-                        <form onSubmit={sendRegister}>
+<form onSubmit={sendRegister}>
                             <div className="mb-3">
                                 <label>Name:</label>
                                 <input
                                     type="text"
                                     className="form-control"
                                     placeholder="Enter Your Name"
-                                    onChange={handleChange}
+                                    onChange={(e) => setRegisterFormData({
+                                        ...registerFormData,
+                                        name: e.target.value
+                                    })}
 
                                 />
                             </div>
@@ -144,7 +136,10 @@ const Login = () => {
                                     type="text"
                                     className="form-control"
                                     placeholder="Enter Your Surname"
-                                    onChange={handleChange}
+                                    onChange={(e) => setRegisterFormData({
+                                        ...registerFormData,
+                                        surname: e.target.value
+                                    })}
 
                                 />
                             </div>
@@ -154,7 +149,10 @@ const Login = () => {
                                     type="date"
                                     className="form-control"
                                     placeholder="Enter Your Date of Birth"
-                                    onChange={handleChange}
+                                    onChange={(e) => setRegisterFormData({
+                                        ...registerFormData,
+                                        birthdate: e.target.value
+                                    })}
 
                                 />
                             </div>
@@ -164,7 +162,10 @@ const Login = () => {
                                     type="email"
                                     className="form-control"
                                     placeholder="Enter Your Email"
-                                    onChange={handleChange}
+                                    onChange={(e) => setRegisterFormData({
+                                        ...registerFormData,
+                                        email: e.target.value
+                                    })}
 
                                 />
                             </div>
@@ -174,8 +175,12 @@ const Login = () => {
                                     type="password"
                                     className="form-control"
                                     placeholder="Enter Your Password"
-                                    onChange={handleChange}
-
+                                    onChange={(e) => {
+                                        setRegisterFormData({
+                                            ...registerFormData,
+                                            password: e.target.value
+                                        })
+                                    }}
                                 />
                             </div>
                             <div className="mb-3">
@@ -184,7 +189,7 @@ const Login = () => {
                                     className="form-control"
                                     placeholder="Repete Password"
                                     onChange={(e) => setSecondPassword(e.target.value)}
-                                />
+                                />                        
                                 {registerFormData.password !== secondPassword && (
                                     <>
                                         <GoAlertFill />
@@ -193,11 +198,14 @@ const Login = () => {
                                 )}
                             </div>
                             <div className="mb-3">
-                                <input
+                            <input
                                     type="file"
                                     className="form-control"
                                     placeholder="Avatar"
-                                    onChange={handleChange}
+                                    onChange={(e) => setRegisterFormData({
+                                        ...registerFormData,
+                                        avatar: e.target.files[0]
+                                    })}
                                 />
                             </div>
                             <div className="d-grid mb-4">
